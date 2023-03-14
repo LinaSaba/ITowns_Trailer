@@ -64,13 +64,17 @@ function updatePointScale(renderer, scene, camera) {
     this.updateMatrixWorld();
 }
 
+var vertices;
+let index = 0;
+let runner;
+
 var waypointGeometry = new itowns.THREE.BoxGeometry(1, 1, 80);
 var waypointMaterial = new itowns.THREE.MeshBasicMaterial({ color: 0xffffff });
 // Listen for globe full initialisation event
 view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
     console.info('Globe initialized');
     itowns.Fetcher.xml('./assets/diag.gpx')
-        .then(gpx => itowns.GpxParser.parse(gpx, {
+        .then((gpx) => itowns.GpxParser.parse(gpx, {
             in: {
                 crs: 'EPSG:4326',
             },
@@ -90,13 +94,13 @@ view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
         }))
         .then(itowns.Feature2Mesh.convert())
         .then(function (mesh) {
-            console.log(mesh);
+
             if (mesh) {
                 mesh.updateMatrixWorld();
                 mesh.traverse((m) => {
                     if (m.type == 'Line') {
-                        var vertices = m.feature.vertices;
-                        console.log(vertices);
+                        vertices = m.feature.vertices;
+                        console.log(m.feature);
                         for (var i = 0; i < vertices.length; i += 3) {
                             var waypoint = new itowns.THREE.Mesh(waypointGeometry, waypointMaterial);
                             waypoint.position.fromArray(vertices, i);
@@ -110,6 +114,47 @@ view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 });
                 view.scene.add(mesh);
                 view.notifyChange();
+
+                let geometryS = new itowns.THREE.SphereGeometry(2000, 320, 320);
+                let materialS = new itowns.THREE.MeshBasicMaterial({ color: 0xff0000 });
+                runner = new itowns.THREE.Mesh(geometryS, materialS);
+                //runner.position.copy(new itowns.THREE.Vector3(349061.88680361793, 7666676.953710422, 2000));
+                //runner.lookAt(mesh.worldToLocal(new itowns.THREE.Vector3()));
+                //runner.onBeforeRender = updatePointScale;
+                runner.updateMatrix();
+                runner.position.set(3862.255004731298, 25093.030992013402, 2441);
+                //runner.position.set(vertices[index * 3], vertices[index * 3 + 1], vertices[index * 3 + 2]);
+                mesh.add(runner);
+                runner.updateMatrixWorld();
+
+                //view.camera.camera3D.position.set(3862.255004731298, 25093.030992013402, 2501);
+                //view.camera.camera3D.lookAt(runner.position)
+
+                animate();
             }
         });
 });
+
+
+function animate() {
+
+    requestAnimationFrame(animate)
+
+    index += 3;
+
+    //runner.lookAt(runner.worldToLocal(new itowns.THREE.Vector3()));
+    runner.updateMatrix();
+    runner.position.fromArray(vertices, index);
+    //runner.position.set(3862.255004731298, 2441, 25093.030992013402);
+    //runner.position.set(vertices[index * 3], vertices[index * 3 + 1], vertices[index * 3 + 2]);
+    runner.updateMatrixWorld();
+
+    console.log(runner.position)
+
+    render();
+}
+
+function render() {
+    view.mainLoop.gfxEngine.renderer.render(view.scene, view.camera.camera3D);
+}
+
