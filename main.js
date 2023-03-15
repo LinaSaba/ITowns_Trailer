@@ -3,13 +3,13 @@ const viewerDiv = document.getElementById('viewerDiv');
 
 // Define the view geographic extent
 itowns.proj4.defs(
-    'EPSG:2975',
-    '+proj=utm +zone=40 +south +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs'
+    'EPSG:4326',
+    '+proj=longlat + ellps=WGS84 + datum=WGS84 + no_defs'
 );
-const viewExtent = new itowns.Extent(
-    'EPSG:2975',
-    300000.0, 400000.0,
-    7630000.0, 7700000.0,
+const viewExtent = new itowns.Extent(///////////regarder istowns.Extent prend quelles genre de coords
+    'EPSG:4326',
+    6140203.0, 6219351.0,
+    -2373832.0, -2439479.0,
 );
 
 const ITOWNS_GPX_PARSER_OPTIONS = { in: { crs: 'EPSG:4326' }, out: { crs: 'EPSG:4326', mergeFeatures: true } };
@@ -29,10 +29,10 @@ const view = new itowns.PlanarView(viewerDiv, viewExtent, {
 
 // Define the source of the ortho-images
 const sourceOrtho = new itowns.WMSSource({
-    url: "https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/r/wms",
+    url: "https://wxs.ign.fr/ortho/geoportail/r/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities",
     name: "HR.ORTHOIMAGERY.ORTHOPHOTOS",
     format: "image/png",
-    crs: 'EPSG:2975',
+    crs: 'EPSG:4326',
     extent: viewExtent,
 });
 // Create the ortho-images ColorLayer and add it to the view
@@ -41,10 +41,10 @@ view.addLayer(layerOrtho);
 
 // Define the source of the dem data
 const sourceDEM = new itowns.WMSSource({
-    url: "https://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/r/wms",
+    url: "https://wxs.ign.fr/ortho/geoportail/r/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities",
     name: "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES",
     format: "image/x-bil;bits=32",
-    crs: 'EPSG:2975',
+    crs: 'EPSG:4326',
     extent: viewExtent,
 });
 // Create the dem ElevationLayer and add it to the view
