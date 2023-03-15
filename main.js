@@ -64,9 +64,10 @@ function updatePointScale(renderer, scene, camera) {
     this.updateMatrixWorld();
 }
 
-var vertices;
+let vertices;
 let index = 0;
 let runner;
+let dPosition = new itowns.THREE.Vector3(0, 0, 0);
 
 var waypointGeometry = new itowns.THREE.BoxGeometry(1, 1, 80);
 var waypointMaterial = new itowns.THREE.MeshBasicMaterial({ color: 0xffffff });
@@ -74,65 +75,91 @@ var waypointMaterial = new itowns.THREE.MeshBasicMaterial({ color: 0xffffff });
 view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
     console.info('Globe initialized');
     itowns.Fetcher.xml('./assets/diag.gpx')
-        .then((gpx) => itowns.GpxParser.parse(gpx, {
-            in: {
-                crs: 'EPSG:4326',
-            },
-            out: {
-                crs: view.referenceCrs,
-                structure: '3d',
-                style: new itowns.Style({
-                    stroke: {
-                        color: 'red',
-                        width: 2
-                    },
-                    point: {
-                        color: 'white'
-                    }
-                })
-            }
-        }))
-        .then(itowns.Feature2Mesh.convert())
-        .then(function (mesh) {
-
-            if (mesh) {
-                mesh.updateMatrixWorld();
-                mesh.traverse((m) => {
-                    if (m.type == 'Line') {
-                        vertices = m.feature.vertices;
-                        console.log(m.feature);
-                        for (var i = 0; i < vertices.length; i += 3) {
-                            var waypoint = new itowns.THREE.Mesh(waypointGeometry, waypointMaterial);
-                            waypoint.position.fromArray(vertices, i);
-                            waypoint.lookAt(mesh.worldToLocal(new itowns.THREE.Vector3()));
-                            waypoint.onBeforeRender = updatePointScale;
-                            waypoint.updateMatrix();
-                            mesh.add(waypoint);
-                            waypoint.updateMatrixWorld();
+        .then((gpx) => {
+            itowns.GpxParser.parse(gpx, {
+                in: {
+                    crs: 'EPSG:4326',
+                },
+                out: {
+                    crs: view.referenceCrs,
+                    structure: '3d',
+                    style: new itowns.Style({
+                        stroke: {
+                            color: 'red',
+                            width: 2
+                        },
+                        point: {
+                            color: 'black'
                         }
+                    })
+                }
+            })
+                .then(itowns.Feature2Mesh.convert())
+                .then(function (mesh) {
+
+                    if (mesh) {
+                        mesh.updateMatrixWorld();
+                        mesh.traverse((m) => {
+                            if (m.type == 'Line') {
+                                vertices = m.feature.vertices;
+                                //console.log(m.feature);
+                                for (var i = 0; i < vertices.length; i += 3) {
+                                    var waypoint = new itowns.THREE.Mesh(waypointGeometry, waypointMaterial);
+                                    waypoint.position.fromArray(vertices, i);
+                                    waypoint.lookAt(mesh.worldToLocal(new itowns.THREE.Vector3()));
+                                    waypoint.onBeforeRender = updatePointScale;
+                                    waypoint.updateMatrix();
+                                    mesh.add(waypoint);
+                                    waypoint.updateMatrixWorld();
+
+                                    // Supposons que vous avez un objet mesh appelé `parentMesh` auquel vous avez ajouté d'autres objets
+                                    // et que vous voulez convertir les coordonnées d'un de ces objets appelé `childObject`
+
+                                    // Récupérez la matrice de transformation globale de l'objet parent
+                                    const parentMatrix = mesh.matrixWorld;
+
+                                    // Appliquez la matrice de transformation globale de l'objet parent à la matrice de transformation locale de l'objet enfant
+                                    const childMatrix = waypoint.matrixWorld.clone();
+                                    childMatrix.premultiply(parentMatrix);
+
+                                    // Créez un vecteur contenant les coordonnées de l'objet enfant dans son propre système de coordonnées locales
+                                    const childPosition = new itowns.THREE.Vector3();
+                                    childPosition.setFromMatrixPosition(waypoint.matrix);
+
+                                    // Convertissez les coordonnées de l'objet enfant en coordonnées globales en appliquant la matrice de transformation globale combinée
+                                    childPosition.applyMatrix4(childMatrix);
+
+                                    console.log(childPosition);
+                                }
+                            }
+                        });
+                        view.scene.add(mesh);
+                        view.notifyChange();
+
+                        //console.log(mesh);
+
+                        let geometryS = new itowns.THREE.SphereGeometry(2000, 320, 320);
+                        let materialS = new itowns.THREE.MeshBasicMaterial({ color: 0xffffff });
+                        runner = new itowns.THREE.Mesh(geometryS, materialS);
+                        //runner.position.copy(new itowns.THREE.Vector3(349061.88680361793, 7666676.953710422, 2000));
+                        //runner.lookAt(mesh.worldToLocal(new itowns.THREE.Vector3()));
+                        //runner.onBeforeRender = updatePointScale;
+                        runner.updateMatrix();
+                        runner.position.set(3862.255004731298, 25093.030992013402, 2441);
+                        //runner.position.set(vertices[index * 3], vertices[index * 3 + 1], vertices[index * 3 + 2]);
+                        view.scene.add(runner);
+                        runner.updateMatrixWorld();
+
+                        //view.camera.camera3D.position.set(3862.255004731298, 25093.030992013402, 2501);
+                        //view.camera.camera3D.lookAt(runner.position)
+
+                        animate();
                     }
                 });
-                view.scene.add(mesh);
-                view.notifyChange();
 
-                let geometryS = new itowns.THREE.SphereGeometry(2000, 320, 320);
-                let materialS = new itowns.THREE.MeshBasicMaterial({ color: 0xff0000 });
-                runner = new itowns.THREE.Mesh(geometryS, materialS);
-                //runner.position.copy(new itowns.THREE.Vector3(349061.88680361793, 7666676.953710422, 2000));
-                //runner.lookAt(mesh.worldToLocal(new itowns.THREE.Vector3()));
-                //runner.onBeforeRender = updatePointScale;
-                runner.updateMatrix();
-                runner.position.set(3862.255004731298, 25093.030992013402, 2441);
-                //runner.position.set(vertices[index * 3], vertices[index * 3 + 1], vertices[index * 3 + 2]);
-                mesh.add(runner);
-                runner.updateMatrixWorld();
+            //console.log(gpx);
+        })
 
-                //view.camera.camera3D.position.set(3862.255004731298, 25093.030992013402, 2501);
-                //view.camera.camera3D.lookAt(runner.position)
-
-                animate();
-            }
-        });
 });
 
 
@@ -149,7 +176,7 @@ function animate() {
     //runner.position.set(vertices[index * 3], vertices[index * 3 + 1], vertices[index * 3 + 2]);
     runner.updateMatrixWorld();
 
-    console.log(runner.position)
+    //console.log(runner.position)
 
     render();
 }
