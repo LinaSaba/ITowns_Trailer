@@ -1,4 +1,6 @@
-
+let latText = document.getElementById("latText");
+let lonText = document.getElementById("lonText");
+let zText = document.getElementById("zText");
 
 // Retrieve the view container
 const viewerDiv = document.getElementById('viewerDiv');
@@ -88,9 +90,6 @@ view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 waypoints.push(gpx.activeElement.children[0].children[1].children[i])
             }
 
-            console.log("____")
-            console.log(gpx.activeElement.children[0].children[1].childElementCount);
-
             itowns.GpxParser.parse(gpx, {
                 in: {
                     crs: 'EPSG:4326',
@@ -142,6 +141,8 @@ view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                         view.scene.add(runner);
                         runner.updateMatrixWorld();
 
+                        document.getElementById("pauseBtn").addEventListener("click", mettrePause);
+
                         animate();
                     }
                 });
@@ -181,13 +182,18 @@ function trouverCoordsP2(x1, y1, z1, x3, y3, z3, distance) {
     return { x: x2, y: y2, z: z2 };
 }
 
+function arrondirDecimal(nombre, decimal) {
+    return Math.round(nombre * (10 ** decimal)) / (10 ** decimal);
+}
+
 const seuilDistance = 100;
+let play = true;
 
 function animate() {
 
     requestAnimationFrame(animate)
 
-    if (index < 7131) {
+    if (index < 7131 && play) {
         let distanceParcourue = 0;
         let distanceAParcourir = seuilDistance;
 
@@ -216,6 +222,10 @@ function animate() {
         runner.position.set(point.x, point.y, point.z);
         runner.updateMatrixWorld();
 
+        latText.innerHTML = arrondirDecimal(point.x, 2);
+        lonText.innerHTML = arrondirDecimal(point.y, 2);
+        zText.innerHTML = arrondirDecimal(point.z, 2);
+
         index++;
     }
 
@@ -224,4 +234,16 @@ function animate() {
 
 function render() {
     view.mainLoop.gfxEngine.renderer.render(view.scene, view.camera.camera3D);
+}
+
+function mettrePause() {
+    console.log("uuuu")
+    if (play) {
+        play = false;
+        document.getElementById("pauseBtn").innerHTML = "Resume";
+    }
+    else {
+        play = true
+        document.getElementById("pauseBtn").innerHTML = "Pause";
+    }
 }
