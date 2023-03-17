@@ -1,3 +1,5 @@
+
+
 // Retrieve the view container
 const viewerDiv = document.getElementById('viewerDiv');
 
@@ -13,6 +15,7 @@ const viewExtent = new itowns.Extent(
 );
 
 const ITOWNS_GPX_PARSER_OPTIONS = { in: { crs: 'EPSG:4326' }, out: { crs: 'EPSG:4326', mergeFeatures: true } };
+
 
 // Define the camera initial placement
 const placement = {
