@@ -78,12 +78,16 @@ view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
     itowns.Fetcher.xml('./assets/diag.gpx')
         .then((gpx) => {
             let i = 0;
-            console.log(gpx.activeElement.children[0].children[1].children);
+
+            const nombrePoints = gpx.activeElement.children[0].children[1].childElementCount;
+
             for (let i = 0; i < 7133; i++) {
-                waypoints.push(gpx.activeElement.children[0].children[1].children[i].attributes)
+                waypoints.push(gpx.activeElement.children[0].children[1].children[i])
             }
 
-            console.log(gpx.activeElement.children[0].children[1].children[i].attributes.lat.value);
+            console.log("____")
+            console.log(gpx.activeElement.children[0].children[1].childElementCount);
+
             itowns.GpxParser.parse(gpx, {
                 in: {
                     crs: 'EPSG:4326',
@@ -126,54 +130,91 @@ view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                         view.scene.add(mesh);
                         view.notifyChange();
 
-                        //console.log(mesh);
-
-                        let geometryS = new itowns.THREE.SphereGeometry(2000, 320, 320);
+                        let geometryS = new itowns.THREE.SphereGeometry(200, 320, 320);
                         let materialS = new itowns.THREE.MeshBasicMaterial({ color: 0xff00ff });
                         runner = new itowns.THREE.Mesh(geometryS, materialS);
-                        //runner.position.copy(new itowns.THREE.Vector3(349061.88680361793, 7666676.953710422, 2000));
-                        //runner.lookAt(mesh.worldToLocal(new itowns.THREE.Vector3()));
-                        //runner.onBeforeRender = updatePointScale;
+
                         runner.updateMatrix();
 
-                        //runner.position.set(vertices[index * 3], vertices[index * 3 + 1], vertices[index * 3 + 2]);
-                        /*group.updateMatrixWorld();
-                        group.position.copy(mesh.position);
-                        group.add(runner);*/
                         view.scene.add(runner);
                         runner.updateMatrixWorld();
-
-                        //view.scene.add(group);
-                        console.log(mesh);
-                        //console.log(group);
-
-                        //view.camera.camera3D.position.set(3862.255004731298, 25093.030992013402, 2501);
-                        //view.camera.camera3D.lookAt(runner.position)
 
                         animate();
                     }
                 });
-
-            //console.log(gpx);
         })
 
 });
 
+function calculerDistance(x1, y1, z1, x2, y2, z2) {
+    return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2);
+}
+
+function trouverCoordsP2(x1, y1, z1, x3, y3, z3, distance) {
+
+    let directionX = null;
+    let directionY = null;
+
+    if (x3 == x1) {
+        if (y3 > y1) {
+            directionX = n / 2
+        } else {
+            directionX = -n / 2
+        }
+        if (z3 > z1) {
+            directionY = n / 2;
+        } else {
+            directionY = -n / 2;
+        }
+    } else {
+        directionX = Math.atan((y3 - y1) / (x3 - x1));
+        directionY = Math.atan((z3 - z1) / (x3 - x1));
+    }
+
+    const x2 = x1 + distance * Math.cos(directionX) * Math.cos(directionY);
+    const y2 = y1 + distance * Math.sin(directionX) * Math.cos(directionY);
+    const z2 = z1 + distance * Math.sin(directionY);
+
+    return { x: x2, y: y2, z: z2 };
+}
+
+const seuilDistance = 100;
 
 function animate() {
 
     requestAnimationFrame(animate)
 
-    index += 1;
+    if (index < 7131) {
+        let distanceParcourue = 0;
+        let distanceAParcourir = seuilDistance;
 
-    //runner.lookAt(runner.worldToLocal(new itowns.THREE.Vector3()));
-    runner.updateMatrix();
-    //runner.position.fromArray(vertices, index);
-    //runner.position.set(3862.255004731298, 2441, 25093.030992013402);
-    runner.position.copy(new itowns.Coordinates('EPSG:4326', waypoints.lat.value, waypoints.lon.value, 2000).as(view.referenceCrs));
-    runner.updateMatrixWorld();
+        let p1 = new itowns.Coordinates('EPSG:4326', parseFloat(waypoints[index].attributes.lon.value), parseFloat(waypoints[index].attributes.lat.value), parseFloat(waypoints[index].children[0].innerHTML)).as(view.referenceCrs);
+        let p2 = new itowns.Coordinates('EPSG:4326', parseFloat(waypoints[index + 1].attributes.lon.value), parseFloat(waypoints[index + 1].attributes.lat.value), parseFloat(waypoints[index + 1].children[0].innerHTML)).as(view.referenceCrs);
 
-    //console.log(runner.position)
+        let distanceP1P2 = calculerDistance(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+
+        while (distanceP1P2 < distanceAParcourir) {
+            distanceParcourue += distanceP1P2;
+            distanceAParcourir = seuilDistance - distanceParcourue;
+
+            if (index < 7131)
+                index++;
+            else
+                break;
+
+            p1 = p2;
+            p2 = new itowns.Coordinates('EPSG:4326', parseFloat(waypoints[index + 1].attributes.lon.value), parseFloat(waypoints[index + 1].attributes.lat.value), parseFloat(waypoints[index + 1].children[0].innerHTML)).as(view.referenceCrs);
+            distanceP1P2 = calculerDistance(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+        }
+
+        let point = trouverCoordsP2(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z, distanceAParcourir);
+
+        runner.updateMatrix();
+        runner.position.set(point.x, point.y, point.z);
+        runner.updateMatrixWorld();
+
+        index++;
+    }
 
     render();
 }
