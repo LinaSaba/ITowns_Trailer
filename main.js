@@ -219,6 +219,7 @@ function convertPenteToRgb(pente) {
 let seuilDistance = 0.1;
 let play = true;
 let premierVue = false;
+let points = [];
 
 function animate() {
 
@@ -253,6 +254,7 @@ function animate() {
         }
 
         let point = trouverCoordsP2(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z, distanceAParcourir);
+        points.push(point);
 
         runner.updateMatrix();
         runner.position.set(point.x, point.y, point.z);
@@ -272,15 +274,11 @@ function animate() {
         let p;
 
         if (premierVue) {
-            if (index > 200) {
-                p = new itowns.Coordinates('EPSG:4326', parseFloat(waypoints[index - 200].attributes.lon.value), parseFloat(waypoints[index - 200].attributes.lat.value), parseFloat(waypoints[index - 200].children[0].innerHTML)).as(view.referenceCrs);
-
-                view.camera.camera3D.position.set(p.x, p.y, p.z + 400);
+            if (points.length > 200) {
+                view.camera.camera3D.position.set(points[index - 200].x, points[index - 200].y, points[index - 200].z + 400);
                 view.camera.camera3D.lookAt(runner.position);
             } else {
-                p = new itowns.Coordinates('EPSG:4326', parseFloat(waypoints[0].attributes.lon.value), parseFloat(waypoints[0].attributes.lat.value), parseFloat(waypoints[0].children[0].innerHTML)).as(view.referenceCrs);
-
-                view.camera.camera3D.position.set(p.x, p.y, p.z + 400);
+                view.camera.camera3D.position.set(points[0].x, points[0].y, points[0].z + 400);
                 view.camera.camera3D.lookAt(runner.position);
             }
         }
