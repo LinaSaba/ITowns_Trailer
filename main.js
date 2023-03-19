@@ -224,7 +224,7 @@ function animate() {
 
     requestAnimationFrame(animate)
 
-    seuilDistance = document.getElementById("vitesse").value;
+    seuilDistance = Math.pow(document.getElementById("vitesse").value/100, 5);
 
     if (index < 7131 && play) {
         let distanceParcourue = 0;
