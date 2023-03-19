@@ -20,7 +20,7 @@ canvas {
     display: block
 }
 
-#pauseBtn {
+.btn {
     -webkit-appearance: none;
     font-family: Courier;
     font-size: 16pt;
@@ -31,20 +31,37 @@ canvas {
     z-index: 11;
     margin-left: 5px;
     margin-top: 5px;
+    margin-bottom: 10px;
 }
 
 #panel {
     position: absolute;
-    width: 500px;
+    width: 400px;
     height: 200px;
     border-radius: 10px;
     z-index: 10;
     margin-left: 10px;
     margin-top: 20px;
     background-color: rgba(163, 46, 132, 0.5);
-
+    font-size: 14pt;
 }
 
 .panel {
     margin-left: 10px;
+}
+
+.containerRow {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+.containerColumn {
+    display: flex;
+    flex-direction: column;
+    width: 200px;
+}
+
+p{
+    margin: 5px;
 }
