@@ -1,6 +1,7 @@
 let latText = document.getElementById("latText");
 let lonText = document.getElementById("lonText");
 let zText = document.getElementById("zText");
+let penteText = document.getElementById("penteText");
 
 // Retrieve the view container
 const viewerDiv = document.getElementById('viewerDiv');
@@ -82,12 +83,13 @@ view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
     console.info('Globe initialized');
     itowns.Fetcher.xml('./assets/diag.gpx')
         .then((gpx) => {
-            let i = 0;
-
-            const nombrePoints = gpx.activeElement.children[0].children[1].childElementCount;
+            const data = gpx.getElementsByTagName("gpx")[0].children[0].children[1];
+            const nombrePoints = data.childElementCount;
+            //const nombrePoints = gpx.activeElement.children[0].children[1].childElementCount;
 
             for (let i = 0; i < 7133; i++) {
-                waypoints.push(gpx.activeElement.children[0].children[1].children[i])
+                waypoints.push(data.children[i])
+                //waypoints.push(gpx.activeElement.children[0].children[1].children[i])
             }
 
             itowns.GpxParser.parse(gpx, {
@@ -186,6 +188,32 @@ function arrondirDecimal(nombre, decimal) {
     return Math.round(nombre * (10 ** decimal)) / (10 ** decimal);
 }
 
+function convertPenteToRgb(pente) {
+
+    const penteMax = 24;
+
+    let r = 0;
+    let g = 0;
+    let b = 0;
+
+    let penteCopy = pente;
+
+    if (pente > penteMax)
+        penteCopy = penteMax;
+    else if (pente < -penteMax)
+        penteCopy = -penteMax;
+
+    if (pente < 0) {
+        b = Math.round(-penteCopy / penteMax * 255);
+        g = Math.round((1 + penteCopy / penteMax) * 255);
+    } else {
+        r = Math.round(penteCopy / penteMax * 255);
+        g = Math.round((1 - penteCopy / penteMax) * 255);
+    }
+
+    return "rgb("+r+","+g+","+b+")";
+}
+
 const seuilDistance = 100;
 let play = true;
 
@@ -201,6 +229,9 @@ function animate() {
         let p2 = new itowns.Coordinates('EPSG:4326', parseFloat(waypoints[index + 1].attributes.lon.value), parseFloat(waypoints[index + 1].attributes.lat.value), parseFloat(waypoints[index + 1].children[0].innerHTML)).as(view.referenceCrs);
 
         let distanceP1P2 = calculerDistance(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+
+        let lastZ = p1.z;
+        let lastDistanceP1P2 = distanceP1P2;
 
         while (distanceP1P2 < distanceAParcourir) {
             distanceParcourue += distanceP1P2;
@@ -222,9 +253,14 @@ function animate() {
         runner.position.set(point.x, point.y, point.z);
         runner.updateMatrixWorld();
 
+        let pente = (point.z - lastZ) / lastDistanceP1P2 * 10;
+
         latText.innerHTML = arrondirDecimal(point.x, 2);
         lonText.innerHTML = arrondirDecimal(point.y, 2);
         zText.innerHTML = arrondirDecimal(point.z, 2);
+        penteText.innerHTML = arrondirDecimal(pente, 2);
+
+        penteText.style.color = convertPenteToRgb(pente);
 
         index++;
     }
@@ -237,7 +273,6 @@ function render() {
 }
 
 function mettrePause() {
-    console.log("uuuu")
     if (play) {
         play = false;
         document.getElementById("pauseBtn").innerHTML = "Resume";
