@@ -1,4 +1,4 @@
-# ITowns_Train
+# ITowns_Trailer
 
 
 L'objectif de ce projet est de visualiser la trajectoire d'une randonneur à l'île de la Réunion sur le parcours du Grand Raid. Afin d'aider les traileurs à visualiser la trajectoire de leur randonnée avant de se lancer.
@@ -23,3 +23,4 @@ Le mouvement de la boule était variant du à la distance entre les points des t
 Nous voulions aussi intégré des données liés au cours d'eau pour ainsi visulisé le cours d'eau le plus proche à chaque instant, sauf que par défaut de données nous n'avons pas trouvé un mesh de couche des données de la BDTopo mais plutôt une couche en 2D. Une fois ces données intégrées, les cours d'eau se situaient à l'altitude 0.
 
 
+Le lien de la vidéo des fonctionnalités est https://www.youtube.com/watch?v=0DSvGtBUfwA
