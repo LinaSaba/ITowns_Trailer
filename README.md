@@ -1,7 +1,7 @@
 # ITowns_Train
 
 
-L'objectif de ce projet est de visualiser la trajectoire d'une boule à l'île de la Réunion. 
+L'objectif de ce projet est de visualiser la trajectoire d'une randonneur à l'île de la Réunion sur le parcours du Grand Raid. Afin d'aider les traileurs à visualiser la trajectoire de leur randonnée avant de se lancer.
 
 Pour lancer le projet, il faut commencer par :
 
