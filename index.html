@@ -9,11 +9,21 @@
 
 <body>
     <div id="panel">
-        <button id="pauseBtn">Pause</button>
-        <p id="latText" class="panel"></p>
-        <p id="lonText" class="panel"></p>
-        <p id="zText" class="panel"></p>
-        <p id="penteText" class="panel"></p>
+        <div class="containerRow">
+            <div class="containerColumn">
+                <button id="pauseBtn" class="btn">Pause</button>
+                <p id="lieuText" class="panel">Ile de la Réunion</p>
+                <p id="scrText" class="panel">EPSG:2975</p>
+                <p id="courseText" class="panel">Grand raid</p>
+            </div>
+            <div class="containerColumn">
+                <button id="restartBtn" class="btn">Restart</button>
+                <p id="latText" class="panel"></p>
+                <p id="lonText" class="panel"></p>
+                <p id="zText" class="panel"></p>
+                <p id="penteText" class="panel"></p>
+            </div>
+        </div>
     </div>
     <div id="viewerDiv"></div>
 

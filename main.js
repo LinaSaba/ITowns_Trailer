@@ -144,6 +144,7 @@ view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                         runner.updateMatrixWorld();
 
                         document.getElementById("pauseBtn").addEventListener("click", mettrePause);
+                        document.getElementById("restartBtn").addEventListener("click", restart);
 
                         animate();
                     }
@@ -255,10 +256,10 @@ function animate() {
 
         let pente = (point.z - lastZ) / lastDistanceP1P2 * 10;
 
-        latText.innerHTML = arrondirDecimal(point.x, 2);
-        lonText.innerHTML = arrondirDecimal(point.y, 2);
-        zText.innerHTML = arrondirDecimal(point.z, 2);
-        penteText.innerHTML = arrondirDecimal(pente, 2);
+        latText.innerHTML = "lat: " + arrondirDecimal(point.x, 2);
+        lonText.innerHTML = "lon: " + arrondirDecimal(point.y, 2);
+        zText.innerHTML = "elev: " + arrondirDecimal(point.z, 2);
+        penteText.innerHTML = "pente: " + arrondirDecimal(pente, 2);
 
         penteText.style.color = convertPenteToRgb(pente);
 
@@ -281,4 +282,14 @@ function mettrePause() {
         play = true
         document.getElementById("pauseBtn").innerHTML = "Pause";
     }
+}
+
+function restart() {
+    index = 0;
+
+    let point = new itowns.Coordinates('EPSG:4326', parseFloat(waypoints[index].attributes.lon.value), parseFloat(waypoints[index].attributes.lat.value), parseFloat(waypoints[index].children[0].innerHTML)).as(view.referenceCrs);
+
+    runner.updateMatrix();
+    runner.position.set(point.x, point.y, point.z);
+    runner.updateMatrixWorld();
 }
