@@ -134,7 +134,7 @@ view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                         view.scene.add(mesh);
                         view.notifyChange();
 
-                        let geometryS = new itowns.THREE.SphereGeometry(200, 320, 320);
+                        let geometryS = new itowns.THREE.SphereGeometry(50, 320, 320);
                         let materialS = new itowns.THREE.MeshBasicMaterial({ color: 0xff00ff });
                         runner = new itowns.THREE.Mesh(geometryS, materialS);
 
@@ -145,6 +145,7 @@ view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
 
                         document.getElementById("pauseBtn").addEventListener("click", mettrePause);
                         document.getElementById("restartBtn").addEventListener("click", restart);
+                        document.getElementById("changeViewBtn").addEventListener("click", changerVue);
 
                         animate();
                     }
@@ -215,12 +216,15 @@ function convertPenteToRgb(pente) {
     return "rgb("+r+","+g+","+b+")";
 }
 
-const seuilDistance = 100;
+let seuilDistance = 0.1;
 let play = true;
+let premierVue = false;
 
 function animate() {
 
     requestAnimationFrame(animate)
+
+    seuilDistance = document.getElementById("vitesse").value;
 
     if (index < 7131 && play) {
         let distanceParcourue = 0;
@@ -231,7 +235,7 @@ function animate() {
 
         let distanceP1P2 = calculerDistance(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
 
-        let lastZ = p1.z;
+        let lastPos = p1;
         let lastDistanceP1P2 = distanceP1P2;
 
         while (distanceP1P2 < distanceAParcourir) {
@@ -254,7 +258,7 @@ function animate() {
         runner.position.set(point.x, point.y, point.z);
         runner.updateMatrixWorld();
 
-        let pente = (point.z - lastZ) / lastDistanceP1P2 * 10;
+        let pente = (point.z - lastPos.z) / lastDistanceP1P2 * 10;
 
         latText.innerHTML = "lat: " + arrondirDecimal(point.x, 2);
         lonText.innerHTML = "lon: " + arrondirDecimal(point.y, 2);
@@ -264,6 +268,22 @@ function animate() {
         penteText.style.color = convertPenteToRgb(pente);
 
         index++;
+
+        let p;
+
+        if (premierVue) {
+            if (index > 200) {
+                p = new itowns.Coordinates('EPSG:4326', parseFloat(waypoints[index - 200].attributes.lon.value), parseFloat(waypoints[index - 200].attributes.lat.value), parseFloat(waypoints[index - 200].children[0].innerHTML)).as(view.referenceCrs);
+
+                view.camera.camera3D.position.set(p.x, p.y, p.z + 400);
+                view.camera.camera3D.lookAt(runner.position);
+            } else {
+                p = new itowns.Coordinates('EPSG:4326', parseFloat(waypoints[0].attributes.lon.value), parseFloat(waypoints[0].attributes.lat.value), parseFloat(waypoints[0].children[0].innerHTML)).as(view.referenceCrs);
+
+                view.camera.camera3D.position.set(p.x, p.y, p.z + 400);
+                view.camera.camera3D.lookAt(runner.position);
+            }
+        }
     }
 
     render();
@@ -292,4 +312,11 @@ function restart() {
     runner.updateMatrix();
     runner.position.set(point.x, point.y, point.z);
     runner.updateMatrixWorld();
+}
+
+function changerVue() {
+    if (premierVue)
+        premierVue = false;
+    else
+        premierVue = true;
 }
