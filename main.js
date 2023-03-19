@@ -322,29 +322,29 @@ function changerVue() {
 
 
 
-Promise.all([
-    itowns.Fetcher.arrayBuffer('shp/watercourse.shp'),
-    itowns.Fetcher.arrayBuffer('shp/watercourse.dbf'),
-    itowns.Fetcher.arrayBuffer('shp/watercourse.shx'),
-    itowns.Fetcher.text('shp/watercourse.prj'),
-]).then(function _(res) {
-    return itowns.ShapefileParser.parse({
-        shp: res[0],
-        dbf: res[1],
-        shx: res[2],
-        prj: res[3],
-    }, {
-        in: {
-            crs: 'EPSG:2975',
-        },
-        out: {
-            crs: view.tileLayer.extent.crs,
-        }
-    });
-}).then(function _(geojson) {
-    var source = new itowns.FileSource({ features: geojson });
-    var layer = new itowns.ColorLayer('velib', { source });
-    view.addLayer(layer);
-    console.log('euh', layer)
-});
+// Promise.all([
+//     itowns.Fetcher.arrayBuffer('shp/watercourse.shp'),
+//     itowns.Fetcher.arrayBuffer('shp/watercourse.dbf'),
+//     itowns.Fetcher.arrayBuffer('shp/watercourse.shx'),
+//     itowns.Fetcher.text('shp/watercourse.prj'),
+// ]).then(function _(res) {
+//     return itowns.ShapefileParser.parse({
+//         shp: res[0],
+//         dbf: res[1],
+//         shx: res[2],
+//         prj: res[3],
+//     }, {
+//         in: {
+//             crs: 'EPSG:2975',
+//         },
+//         out: {
+//             crs: view.tileLayer.extent.crs,
+//         }
+//     });
+// }).then(function _(geojson) {
+//     var source = new itowns.FileSource({ features: geojson });
+//     var layer = new itowns.ColorLayer('velib', { source });
+//     view.addLayer(layer);
+//     console.log('euh', layer)
+// });
 
