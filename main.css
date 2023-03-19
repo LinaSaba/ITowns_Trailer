@@ -36,7 +36,7 @@ canvas {
 
 #panel {
     position: absolute;
-    width: 400px;
+    width: 500px;
     height: 200px;
     border-radius: 10px;
     z-index: 10;
