@@ -3,6 +3,7 @@ let lonText = document.getElementById("lonText");
 let zText = document.getElementById("zText");
 let penteText = document.getElementById("penteText");
 
+
 // Retrieve the view container
 const viewerDiv = document.getElementById('viewerDiv');
 
@@ -213,7 +214,7 @@ function convertPenteToRgb(pente) {
         g = Math.round((1 - penteCopy / penteMax) * 255);
     }
 
-    return "rgb("+r+","+g+","+b+")";
+    return "rgb(" + r + "," + g + "," + b + ")";
 }
 
 let seuilDistance = 0.1;
@@ -320,3 +321,32 @@ function changerVue() {
     else
         premierVue = true;
 }
+
+
+
+Promise.all([
+    itowns.Fetcher.arrayBuffer('shp/watercourse.shp'),
+    itowns.Fetcher.arrayBuffer('shp/watercourse.dbf'),
+    itowns.Fetcher.arrayBuffer('shp/watercourse.shx'),
+    itowns.Fetcher.text('shp/watercourse.prj'),
+]).then(function _(res) {
+    return itowns.ShapefileParser.parse({
+        shp: res[0],
+        dbf: res[1],
+        shx: res[2],
+        prj: res[3],
+    }, {
+        in: {
+            crs: 'EPSG:2975',
+        },
+        out: {
+            crs: view.tileLayer.extent.crs,
+        }
+    });
+}).then(function _(geojson) {
+    var source = new itowns.FileSource({ features: geojson });
+    var layer = new itowns.ColorLayer('velib', { source });
+    view.addLayer(layer);
+    console.log('euh', layer)
+});
+
